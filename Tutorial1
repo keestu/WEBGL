@@ -1,0 +1,1271 @@
+    WEBGL Tutorial 1 Basics
+    Copyright (C) 2014  Tappali Ekanathan Keestu (keestu@gmail.com)
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WEB GL Tutorial 1 Basics</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+        <!--script type="text/javascript" src="glMatrix-0.9.5.min.js"></script-->
+
+        <!--GL Matrix version 2-->
+        <script type="text/javascript" src="gl-matrix/common.js"></script>
+        <!--
+        <script type="text/javascript" src="gl-matrix/mat2.js"></script>
+        <script type="text/javascript" src="gl-matrix/mat2d.js"></script>
+        <script type="text/javascript" src="gl-matrix/mat3.js"></script>
+        -->
+        <script type="text/javascript" src="gl-matrix/mat4.js"></script>
+        
+        <script type="text/javascript" src="gl-matrix/vec2.js"></script>
+        <!--
+        <script type="text/javascript" src="gl-matrix/vec3.js"></script>
+        <script type="text/javascript" src="gl-matrix/vec4.js"></script>
+        <script type="text/javascript" src="gl-matrix/quat.js"></script>
+        -->
+        <!--Google GL utility -->
+        <script type="text/javascript" src="webgl-utils.js"></script>
+
+        <!--   Shaders              -->
+        <!--   Triangle Shader      -->
+        <script id="triangle-shader-fs" type="x-shader/x-fragment">
+            precision mediump float;
+
+            varying vec4 vColor;
+
+            void main(void) {
+                gl_FragColor = vColor;
+                }
+        </script>
+
+        <script id="triangle-shader-vs" type="x-shader/x-vertex">
+            attribute vec3 aVertexPosition;
+            attribute vec4 aVertexColor;
+
+            uniform mat4 uMVMatrix;
+            uniform mat4 uPMatrix;
+
+            varying vec4 vColor;
+
+            void main(void) {
+                gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+                vColor      = aVertexColor;
+                }
+        </script>
+
+        <!--   Square Shader      -->
+        <script id="square-shader-fs" type="x-shader/x-fragment">
+            precision mediump float;
+
+            varying vec4 vColor;
+
+            void main(void) {
+                gl_FragColor = vColor;
+                }
+        </script>
+
+        <script id="square-shader-vs" type="x-shader/x-vertex">
+            attribute vec3 aVertexPosition;
+            attribute vec4 aVertexColor;
+
+            uniform mat4 uMVMatrix;
+            uniform mat4 uPMatrix;
+
+            varying vec4 vColor;
+
+            void main(void) {
+                gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+                vColor      = aVertexColor;
+                }
+        </script>
+
+        <!--   Cube Shader      -->
+        <script id="cube-shader-fs" type="x-shader/x-fragment">
+            precision mediump float;
+
+            varying vec4 vColor;
+
+            void main(void) {
+                gl_FragColor = vColor;
+                }
+        </script>
+
+        <script id="cube-shader-vs" type="x-shader/x-vertex">
+            attribute vec3 aVertexPosition;
+            attribute vec4 aVertexColor;
+
+            uniform mat4 uMVMatrix;
+            uniform mat4 uPMatrix;
+
+            varying vec4 vColor;
+
+            void main(void) {
+                gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+                vColor      = aVertexColor;
+                }
+        </script>
+
+        <!--   Cube Texture Shader      -->
+        <script id="cubeTex-shader-fs" type="x-shader/x-fragment">
+            precision mediump float;
+
+            varying vec2 vTextureCoord;
+            uniform sampler2D uSampler;
+
+            void main(void) {
+                gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+                }
+        </script>
+
+        <script id="cubeTex-shader-vs" type="x-shader/x-vertex">
+            attribute vec3 aVertexPosition;
+            attribute vec2 aTextureCoord;
+
+            uniform mat4 uMVMatrix;
+            uniform mat4 uPMatrix;
+
+            varying vec2 vTextureCoord;
+
+            void main(void) {
+                gl_Position   = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+                vTextureCoord = aTextureCoord;
+                }
+        </script>
+
+        <!--   Pyramid Shader      -->
+        <script id="pyramid-shader-fs" type="x-shader/x-fragment">
+            precision mediump float;
+
+            varying vec4 vColor;
+
+            void main(void) {
+                gl_FragColor = vColor;
+                }
+        </script>
+
+        <script id="pyramid-shader-vs" type="x-shader/x-vertex">
+            attribute vec3 aVertexPosition;
+            attribute vec4 aVertexColor;
+
+            uniform mat4 uMVMatrix;
+            uniform mat4 uPMatrix;
+
+            varying vec4 vColor;
+
+            void main(void) {
+                gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+                vColor      = aVertexColor;
+                }
+        </script>
+
+        <script type="text/javascript">
+            /* Width and Height variables of the browser screen  */
+            var wd, ht;
+
+            /* For Frame rate                                    */
+            var lastTime      = 0;
+            var frames        = 0;
+            var totalTime     = 0;
+            var updateTime    = 0;
+            var updateFrames  = 0;
+
+            /* Because JavaScript is third class in mouse events */
+            var mouseLoc      = defineMouseLocationObject();
+
+            /* Common sense to object disposition                */
+            var objListToDispose = new Array();
+
+            /* Need to stop the redraw when disposing            */
+            var reDrawID = 0;
+
+            /* Need an iterator in many places                   */
+            var looper = 0;
+
+            /* Render the text as it is then and there C style   */
+            function printf(text) {
+                document.writeln(text);
+                }
+
+            /* Degree to Radian converter                        */
+            function degToRad(degrees) {
+                return degrees * Math.PI / 180;
+                }
+
+            /* One time initiation of FPS to store initial time  */
+            function initiateFPS() {
+                console.log("    Initiate FPS");
+                lastTime = (new Date()).getTime();
+                }
+
+            /* Update the frame rate                             */
+            function updateFPS(elements) {
+                //console.log("    Update FPS");
+                var now      = (new Date()).getTime();
+
+                var delta    = now - lastTime;
+                lastTime     = now;
+
+                totalTime    = totalTime  + delta;
+                updateTime   = updateTime + delta;
+
+                frames       = frames       + 1;
+                updateFrames = updateFrames + 1;
+
+                if (1000 < updateTime) {
+                    document.getElementById('fps').innerHTML = "FPS AVG: " + Math.floor((1000*frames/totalTime)/elements)
+                      + " CUR: " + Math.floor((1000*updateFrames/updateTime)/elements);
+                    updateTime   = 0;
+                    updateFrames = 0;
+                    }
+                }
+
+            /* The main object for mouse event location          */
+            function defineMouseLocationObject() {
+                var globMouseObj = new Object();
+
+                /* Constructor for the global mouse location     */
+                globMouseObj.x = 0;
+                globMouseObj.y = 0;
+
+                /* Getter for X and Y                            */
+                globMouseObj.getX = function() {
+                    return this.x;
+                    };
+
+                globMouseObj.getY = function() {
+                    return this.y;
+                    };
+
+                /* Setter for X and Y                            */
+                globMouseObj.setX = function(x) {
+                    this.x = x;
+                    };
+
+                globMouseObj.setY = function(y) {
+                    this.y = y;
+                    };
+
+                /* Destructor                                    */
+                globMouseObj.destroy = function() {
+                    delete this.x;
+                    delete this.y;
+                    delete this;
+                    };
+
+                return globMouseObj;
+                }
+
+            /* Update pointer location based on mouse move event */
+            function mouseMove(evt) {
+                evt = (evt) ? evt : (window.event) ? window.event : "";
+                if (evt.pageX) {
+                    if (0 <= evt.pageX) {
+                        mouseLoc.setX(evt.pageX);
+                        }
+                    else {
+                        mouseLoc.setX(0);
+                        }
+                    if (0 <= evt.pageY) {
+                        mouseLoc.setY(evt.pageY);
+                        }
+                    else {
+                        mouseLoc.setY(0);
+                        }
+                    }
+                else {
+                    if (0 <= evt.clientX) {
+                        mouseLoc.setX(evt.clientX);
+                        }
+                    else {
+                        mouseLoc.setX(0);
+                        }
+                    if (0 <= evt.clientY) {
+                        mouseLoc.setY(evt.clientY);
+                        }
+                    else {
+                        mouseLoc.setY(0);
+                        }
+                    }
+                }
+
+            /* Dispose off the dangling objects                  */
+            function onExit() {
+                /* RIP Mouse object                              */
+                mouseLoc.destroy();
+
+                /* RIP Objects                                   */
+                looper = 0;
+                while(looper <= objListToDispose.length-1) {
+                    objListToDispose[looper].destroy();
+                    looper = looper + 1;
+                    }
+
+                objListToDispose.length = 0;
+                }
+                
+            /**
+             * Provides cancelRequestAnimFrame in a cross browser way.
+            */
+
+            window.cancelRequestAnimFrame = (function() {
+                return window.cancelAnimationFrame           ||
+                    window.webkitCancelRequestAnimationFrame ||
+                    window.mozCancelRequestAnimationFrame    ||
+                    window.oCancelRequestAnimationFrame      ||
+                    window.msCancelRequestAnimationFrame     ||
+                    function(callback) {
+                        window.clearTimeout(callback);
+                        };
+                })();
+
+            /*****************************************************/
+            /* WebGL start                                       */
+
+            /* Base environment property for totality of WEBGL   */
+            function defineWebGLPocket(cavnas) {
+                console.log("      Define the WEBGL base pocket");
+                var basePocket = new Object();
+
+                /* Constructor for a particular GL environment   */
+                // None as of now
+
+                /* Initialize WebGL                              */
+                try {
+                    var gl            = WebGLUtils.setupWebGL(canvas);
+                    gl.viewportWidth  = canvas.width;
+                    gl.viewportHeight = canvas.height;
+                    basePocket.gl     = gl;
+                    console.log("      WEBGL base pocket: SUCCESS");
+                    }
+                catch (e) {
+                    /* Exception: Could not initialise WebGL     */
+                    console.log("      Exception in WEBGL base pocket: " + e);
+                    }
+
+                /* Destructor                                    */
+                basePocket.destroy = function() {
+                    delete this.gl;
+                    delete this;
+                    };
+
+                return basePocket;
+                }
+
+            function definePocket(cavnas) {
+                console.log("    Define the pocket");
+                var pocket      = new Object();
+
+                /*    Constructor for a pocket                   */
+                pocket.pocketGL = new defineWebGLPocket(canvas);
+
+                /*    Exit if WEBGL could not initialize         */
+                if ("undefined" == typeof pocket.pocketGL.gl) {
+                    console.log("    Exception in Base pocket creation");
+                    delete this.pocketGL;
+                    delete this;
+                    return 0;
+                    }
+                else {
+                    console.log("    Setting WEBGL base attributes");
+                    pocket.pocketGL.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+                    pocket.pocketGL.gl.enable(pocket.pocketGL.gl.DEPTH_TEST);
+                    initiateFPS();
+                    }
+
+                /* Complete declarations if pending              */
+                pocket.pMatrix       = mat4.create();
+                pocket.mvMatrixStack = new Array();
+
+                /* Contents of the pocket                        */
+                pocket.contentList   = new Array();
+
+                /* Assign to the garbage collector object        */
+                objListToDispose[objListToDispose.length] = pocket;
+
+                /*****************************************************/
+                /*             Pocket base functions                 */
+
+                /* Get the fragment or vertex shader                 */
+                pocket.getShader = function(gl, id) {
+                    console.log("          Get the Shader");
+                    console.log("            Creating Shader:" + id);
+                    var shaderScript = document.getElementById(id);
+                    var shader;
+                    var str = "";
+
+                    if (shaderScript) {
+                        var k = shaderScript.firstChild;
+
+                        while (k) {
+                            if (k.nodeType == 3) {
+                                str += k.textContent;
+                                }
+                            k = k.nextSibling;
+                            }
+
+                        if (shaderScript.type == "x-shader/x-fragment") {
+                            console.log("            Creating fragment shader");
+                            shader = gl.createShader(gl.FRAGMENT_SHADER);
+                            }
+                        else if (shaderScript.type == "x-shader/x-vertex") {
+                            console.log("            Creating vertex shader");
+                            shader = gl.createShader(gl.VERTEX_SHADER);
+                            }
+                        else {
+                            return 0;
+                            }
+
+                        gl.shaderSource(shader, str);
+                        gl.compileShader(shader);
+
+                        if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                            console.log("            Shader Program compile success");
+                            return shader;
+                            }
+                        else {
+                            console.log("            Shader Program compile failed:" + gl.getShaderInfoLog(shader));
+                            return 0;
+                            }
+                        }
+                    else {
+                        console.log("            Shader Program creation failed");
+                        return 0;
+                        }
+                    };
+
+                /* Initialize shader fragment                     */
+                pocket.initShaders = function(gl, fragment, vertex) {
+                    console.log("      Initialize Shader");
+                    console.log("        Fragment Shader:" + fragment);
+                    console.log("        Vertex Shader:" + vertex);
+
+                    var fragmentShader = this.getShader(gl, fragment);
+                    var vertexShader   = this.getShader(gl, vertex);
+
+                    if (0 == fragmentShader || 0 == vertexShader) {
+                        console.log("        Failed to Load shader");
+                        return 0;
+                        }
+                    else {
+                        var shaderProgram = gl.createProgram();
+                        console.log("        Creating Shader fragment");
+                        gl.attachShader(shaderProgram, vertexShader);
+                        gl.attachShader(shaderProgram, fragmentShader);
+                        gl.linkProgram(shaderProgram);
+
+                        if (gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+                            console.log("          Returning Shader fragment successfully");
+                            gl.useProgram(shaderProgram);
+
+                            shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+                            gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+                            if (gl.getAttribLocation(shaderProgram, "aVertexColor") >= 0) {
+                                shaderProgram.vertexColorAttribute    = gl.getAttribLocation(shaderProgram, "aVertexColor");
+                                gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
+                                }
+
+                            if (gl.getAttribLocation(shaderProgram, "aTextureCoord") >= 0) {
+                                shaderProgram.textureCoordAttribute   = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+                                gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+                                shaderProgram.samplerUniform  = gl.getUniformLocation(shaderProgram, "uSampler");
+                                }
+
+                            shaderProgram.pMatrixUniform  = gl.getUniformLocation(shaderProgram, "uPMatrix");
+                            shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+                            
+                            /* For destroying properly            */
+                            shaderProgram.fragmentShader  = fragmentShader;
+                            shaderProgram.vertexShader    = vertexShader;
+
+                            return shaderProgram;
+                            }
+                        else {
+                            console.log("          Returning Shader fragment failed");
+                            return 0;
+                            }
+                        }
+                    };
+                    
+                pocket.handleLoadedTexture = function(texture, gl) {
+                    gl.bindTexture  (gl.TEXTURE_2D, texture);
+                    gl.pixelStorei  (gl.UNPACK_FLIP_Y_WEBGL, true);
+                    gl.texImage2D   (gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                    gl.bindTexture  (gl.TEXTURE_2D, null);
+                    };
+
+                pocket.initTexture = function(gl,src) {
+                    texture       = gl.createTexture();
+                    texture.image = new Image();
+                    //texture.image.crossOrigin = "anonymous";
+                    texture.image.onload = function () {
+                        pocket.handleLoadedTexture(texture, gl)
+                        }
+                    texture.image.src = src;
+                    return texture;
+                    };
+
+
+                /* Push Matrix */
+                pocket.mvPushMatrix = function(mvMatrix, mvMatrixStack) {
+                    var copy = mat4.create();
+                    mat4.copy(mvMatrix, copy);
+                    mvMatrixStack.push(copy);
+                    };
+
+                /* Pop Matrix */
+                pocket.mvPopMatrix = function(mvMatrix, mvMatrixStack) {
+                    if (mvMatrixStack.length == 0) {
+                        throw "Invalid popMatrix!";
+                        }
+                    mvMatrix = mvMatrixStack.pop();
+                    };
+
+                /* Set uniform Matrix */
+                pocket.setMatrixUniforms = function(object,pMatrix) {
+                    this.pocketGL.gl.uniformMatrix4fv(object.shaderProgram.pMatrixUniform, false, pMatrix);
+                    this.pocketGL.gl.uniformMatrix4fv(object.shaderProgram.mvMatrixUniform, false, object.mvMatrix);
+                    };
+
+                /* Draw Perspective                                   */
+                pocket.renderPerspective = function() {
+                    this.pocketGL.gl.viewport(0, 0, wd, ht);
+                    this.pocketGL.gl.clear(this.pocketGL.gl.COLOR_BUFFER_BIT | this.pocketGL.gl.DEPTH_BUFFER_BIT);
+
+                    /* Field of view, Width height ratio, min distance of viewpoint, max distance of viewpoint, */
+                    mat4.perspective(this.pMatrix, degToRad(45), (this.pocketGL.gl.viewportWidth / this.pocketGL.gl.viewportHeight), 0.1, 100);
+                    };
+
+                /* Calculate rotatory speed                          */
+                pocket.animate = function(rotationObject) {
+                    var timeNow = (new Date()).getTime();
+                    if (lastTime != 0) {
+                        var elapsed              = timeNow - lastTime;
+                        rotationObject.rotValue += (rotationObject.rotationSpeed * elapsed) / 1000.0;
+                        }
+                    };
+
+                /* Buffer Triangle                                   */
+                pocket.bufferTriangle = function(object) {
+                    /* Vertex                                        */
+                    console.log("        Buffer the " + object.type + "'s vertex");
+                    object.vertexPositionBuffer = this.pocketGL.gl.createBuffer();
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexPositionBuffer);
+                    var vertices = [
+                         0.0,            object.size,    0.0,
+                        -object.size,   -object.size,    0.0,
+                         object.size,   -object.size,    0.0
+                        ];
+                    this.pocketGL.gl.bufferData(this.pocketGL.gl.ARRAY_BUFFER, new Float32Array(vertices), this.pocketGL.gl.STATIC_DRAW);
+
+                    object.vertexPositionBuffer.itemSize = 3;
+                    object.vertexPositionBuffer.numItems = 3;
+
+                    /* Color                                         */
+                    console.log("        Buffer the " + object.type + "'s color");
+                    object.vertexColorBuffer = this.pocketGL.gl.createBuffer();
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexColorBuffer);
+                    this.pocketGL.gl.bufferData(this.pocketGL.gl.ARRAY_BUFFER, new Float32Array(object.color), this.pocketGL.gl.STATIC_DRAW);
+
+                    object.vertexColorBuffer.itemSize = 4;
+                    object.vertexColorBuffer.numItems = 3;
+                    };
+
+                /* Draw Triangle                                     */
+                pocket.drawTriangle = function(object) {
+                    mat4.identity(object.mvMatrix);
+
+                    this.mvPushMatrix(object.mvMatrix,this.mvMatrixStack);
+                    // Give it a X, Y position. The Z position if for visibility a.k.a. depth
+                    mat4.translate(this.pMatrix, this.pMatrix, [3.5, -1.0, -8.0]);
+                    mat4.rotate(object.mvMatrix, object.mvMatrix, degToRad(object.rotValue), object.rotDirection);
+                    //OR
+                    //mat4.rotateY(this.mvMatrix, this.mvMatrix, degToRad(object.rotValue));
+
+                    //console.log("mvMatrix = " + mat4.str(this.mvMatrix));
+
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexPositionBuffer);
+                    this.pocketGL.gl.vertexAttribPointer(object.shaderProgram.vertexPositionAttribute, object.vertexPositionBuffer.itemSize, this.pocketGL.gl.FLOAT, false, 0, 0);
+
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexColorBuffer);
+                    this.pocketGL.gl.vertexAttribPointer(object.shaderProgram.vertexColorAttribute, object.vertexColorBuffer.itemSize, this.pocketGL.gl.FLOAT, false, 0, 0);
+
+                    this.setMatrixUniforms(object,this.pMatrix,object.mvMatrix);
+                    this.pocketGL.gl.drawArrays(this.pocketGL.gl.TRIANGLES, 0, object.vertexPositionBuffer.numItems);
+
+                    this.mvPopMatrix(object.mvMatrix,this.mvMatrixStack);
+                    };
+
+                /* Buffer Square                                     */
+                pocket.bufferSquare = function(object) {
+                    /* Vertex                                        */
+                    console.log("        Buffer the " + object.type + "'s vertex");
+                    object.vertexPositionBuffer = this.pocketGL.gl.createBuffer();
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexPositionBuffer);
+                    var vertices = [
+                         object.size,  object.size,  0.0,
+                        -object.size,  object.size,  0.0,
+                         object.size, -object.size,  0.0,
+                        -object.size, -object.size,  0.0
+                        ];
+                    this.pocketGL.gl.bufferData(this.pocketGL.gl.ARRAY_BUFFER, new Float32Array(vertices), this.pocketGL.gl.STATIC_DRAW);
+
+                    object.vertexPositionBuffer.itemSize = 3;
+                    object.vertexPositionBuffer.numItems = 4;
+
+                    /* Color                                         */
+                    console.log("        Buffer the " + object.type + "'s color");
+                    object.vertexColorBuffer = this.pocketGL.gl.createBuffer();
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexColorBuffer);
+                    this.pocketGL.gl.bufferData(this.pocketGL.gl.ARRAY_BUFFER, new Float32Array(object.color), this.pocketGL.gl.STATIC_DRAW);
+
+                    object.vertexColorBuffer.itemSize = 4;
+                    object.vertexColorBuffer.numItems = 4;
+                    }
+
+                /* Draw Square                                       */
+                pocket.drawSquare = function(object) {
+                    mat4.identity(object.mvMatrix);
+
+                    this.mvPushMatrix(object.mvMatrix,this.mvMatrixStack);
+                    // Give it a X, Y position. The Z position if for visibility a.k.a. depth
+                    mat4.translate(this.pMatrix, this.pMatrix, [-2.5, 0.0, 0.0]);
+                    mat4.rotate(object.mvMatrix, object.mvMatrix, degToRad(object.rotValue), object.rotDirection);
+                    //OR
+                    //mat4.rotateX(mvMatrix, mvMatrix, degToRad(rSquare));
+
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexPositionBuffer);
+                    this.pocketGL.gl.vertexAttribPointer(object.shaderProgram.vertexPositionAttribute, object.vertexPositionBuffer.itemSize, this.pocketGL.gl.FLOAT, false, 0, 0);
+
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexColorBuffer);
+                    this.pocketGL.gl.vertexAttribPointer(object.shaderProgram.vertexColorAttribute, object.vertexColorBuffer.itemSize, this.pocketGL.gl.FLOAT, false, 0, 0);
+
+                    this.setMatrixUniforms(object,this.pMatrix,object.mvMatrix);
+                    this.pocketGL.gl.drawArrays(this.pocketGL.gl.TRIANGLE_STRIP, 0, object.vertexPositionBuffer.numItems);
+
+                    this.mvPopMatrix(object.mvMatrix,this.mvMatrixStack);
+                    }
+
+                /* Buffer Cube                                       */
+                pocket.bufferCube = function(object) {
+                    /* Vertex                                        */
+                    console.log("        Buffer the " + object.type + "'s vertex");
+                    object.vertexPositionBuffer = this.pocketGL.gl.createBuffer();
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexPositionBuffer);
+                    vertices = [
+                        // Front face
+                        -object.size, -object.size,  object.size,
+                         object.size, -object.size,  object.size,
+                         object.size,  object.size,  object.size,
+                        -object.size,  object.size,  object.size,
+
+                        // Back face
+                        -object.size, -object.size, -object.size,
+                        -object.size,  object.size, -object.size,
+                         object.size,  object.size, -object.size,
+                         object.size, -object.size, -object.size,
+
+                        // Top face
+                        -object.size,  object.size, -object.size,
+                        -object.size,  object.size,  object.size,
+                         object.size,  object.size,  object.size,
+                         object.size,  object.size, -object.size,
+
+                        // Bottom face
+                        -object.size, -object.size, -object.size,
+                         object.size, -object.size, -object.size,
+                         object.size, -object.size,  object.size,
+                        -object.size, -object.size,  object.size,
+
+                        // Right face
+                         object.size, -object.size, -object.size,
+                         object.size,  object.size, -object.size,
+                         object.size,  object.size,  object.size,
+                         object.size, -object.size,  object.size,
+
+                        // Left face
+                        -object.size, -object.size, -object.size,
+                        -object.size, -object.size,  object.size,
+                        -object.size,  object.size,  object.size,
+                        -object.size,  object.size, -object.size
+                        ];
+                    this.pocketGL.gl.bufferData(this.pocketGL.gl.ARRAY_BUFFER, new Float32Array(vertices), this.pocketGL.gl.STATIC_DRAW);
+
+                    object.vertexPositionBuffer.itemSize = 3;
+                    object.vertexPositionBuffer.numItems = 24;
+
+                    /* Color                                         */
+                    if (object.color) {
+                        console.log("        Buffer the " + object.type + "'s color");
+                        object.vertexColorBuffer = this.pocketGL.gl.createBuffer();
+                        this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexColorBuffer);
+
+                        var unpackedColors = [];
+                        for (var i in object.color) {
+                            var color = object.color[i];
+                            for (looper = 0; looper < 4; looper++) {
+                                unpackedColors = unpackedColors.concat(color);
+                                }
+                            }
+
+                        this.pocketGL.gl.bufferData(this.pocketGL.gl.ARRAY_BUFFER, new Float32Array(unpackedColors), this.pocketGL.gl.STATIC_DRAW);
+                        object.vertexColorBuffer.itemSize = 4;
+                        object.vertexColorBuffer.numItems = 24;
+                        }
+
+                    /* Texture                                       */
+                    if (object.texture) {
+                        console.log("        Buffer the " + object.type + "'s texture");
+                        object.vertexTexCoordBuffer = this.pocketGL.gl.createBuffer();
+                        this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexTexCoordBuffer);
+                        var textureCoords = [
+                          // Front face
+                          0.0, 0.0,
+                          1.0, 0.0,
+                          1.0, 1.0,
+                          0.0, 1.0,
+
+                          // Back face
+                          1.0, 0.0,
+                          1.0, 1.0,
+                          0.0, 1.0,
+                          0.0, 0.0,
+
+                          // Top face
+                          0.0, 1.0,
+                          0.0, 0.0,
+                          1.0, 0.0,
+                          1.0, 1.0,
+
+                          // Bottom face
+                          1.0, 1.0,
+                          0.0, 1.0,
+                          0.0, 0.0,
+                          1.0, 0.0,
+
+                          // Right face
+                          1.0, 0.0,
+                          1.0, 1.0,
+                          0.0, 1.0,
+                          0.0, 0.0,
+
+                          // Left face
+                          0.0, 0.0,
+                          1.0, 0.0,
+                          1.0, 1.0,
+                          0.0, 1.0,
+                        ];
+                        this.pocketGL.gl.bufferData(this.pocketGL.gl.ARRAY_BUFFER, new Float32Array(textureCoords), this.pocketGL.gl.STATIC_DRAW);
+                        object.vertexTexCoordBuffer.itemSize = 2;
+                        object.vertexTexCoordBuffer.numItems = 24;
+                        }
+
+                    /* Indices                                       */
+                    console.log("        Buffer the " + object.type + "'s indices");
+                    object.vertexIndexBuffer = this.pocketGL.gl.createBuffer();
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ELEMENT_ARRAY_BUFFER, object.vertexIndexBuffer);
+                    var cubeVertexIndices = [
+                        0, 1, 2,      0, 2, 3,    // Front face
+                        4, 5, 6,      4, 6, 7,    // Back face
+                        8, 9, 10,     8, 10, 11,  // Top face
+                        12, 13, 14,   12, 14, 15, // Bottom face
+                        16, 17, 18,   16, 18, 19, // Right face
+                        20, 21, 22,   20, 22, 23  // Left face
+                        ];
+
+                    this.pocketGL.gl.bufferData(this.pocketGL.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), this.pocketGL.gl.STATIC_DRAW);
+                    object.vertexIndexBuffer.itemSize = 1;
+                    object.vertexIndexBuffer.numItems = 36;
+                    };
+
+                /* Draw Cube                                       */
+                pocket.drawCube = function(object) {
+                    mat4.identity(object.mvMatrix);
+
+                    this.mvPushMatrix(object.mvMatrix,this.mvMatrixStack);
+                    // Give it a X, Y position. The Z position if for visibility a.k.a. depth
+                    mat4.translate(this.pMatrix, this.pMatrix, [-3.5, 0.0, 0.0]);
+                    mat4.rotate(object.mvMatrix, object.mvMatrix, degToRad(object.rotValue), object.rotDirection);
+
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexPositionBuffer);
+                    this.pocketGL.gl.vertexAttribPointer(object.shaderProgram.vertexPositionAttribute, object.vertexPositionBuffer.itemSize, this.pocketGL.gl.FLOAT, false, 0, 0);
+
+                    if (object.vertexColorBuffer) {
+                        this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexColorBuffer);
+                        this.pocketGL.gl.vertexAttribPointer(object.shaderProgram.vertexColorAttribute, object.vertexColorBuffer.itemSize, this.pocketGL.gl.FLOAT, false, 0, 0);
+                        }
+
+                    if (object.vertexTexCoordBuffer) {
+                        this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexTexCoordBuffer);
+                        this.pocketGL.gl.vertexAttribPointer(object.shaderProgram.textureCoordAttribute, object.vertexTexCoordBuffer.itemSize, this.pocketGL.gl.FLOAT, false, 0, 0);
+
+                        this.pocketGL.gl.activeTexture(this.pocketGL.gl.TEXTURE0);
+                        this.pocketGL.gl.bindTexture(this.pocketGL.gl.TEXTURE_2D, object.texture);
+                        this.pocketGL.gl.uniform1i(object.shaderProgram.samplerUniform, 0);
+                        }
+
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ELEMENT_ARRAY_BUFFER, object.vertexIndexBuffer);
+
+                    this.setMatrixUniforms(object,this.pMatrix,object.mvMatrix);
+                    this.pocketGL.gl.drawElements(this.pocketGL.gl.TRIANGLES, object.vertexIndexBuffer.numItems, this.pocketGL.gl.UNSIGNED_SHORT, 0);
+
+                    this.mvPopMatrix(object.mvMatrix,this.mvMatrixStack);
+                    };
+
+                /* Buffer Pyramid                                    */
+                pocket.bufferPyramid = function(object) {
+                    /* Vertex                                        */
+                    console.log("        Buffer the " + object.type + "'s vertex");
+                    object.vertexPositionBuffer = this.pocketGL.gl.createBuffer();
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexPositionBuffer);
+                    var vertices = [
+                        // Front face
+                         0.0,          object.size,  0.0,
+                        -object.size, -object.size,  object.size,
+                         object.size, -object.size,  object.size,
+
+                        // Right face
+                         0.0,          object.size,  0.0,
+                         object.size, -object.size,  object.size,
+                         object.size, -object.size, -object.size,
+
+                        // Back face
+                         0.0,          object.size,  0.0,
+                         object.size, -object.size, -object.size,
+                        -object.size, -object.size, -object.size,
+
+                        // Left face
+                         0.0,          object.size,  0.0,
+                        -object.size, -object.size, -object.size,
+                        -object.size, -object.size,  object.size,
+                        
+                        //Bottom left
+                        -object.size, -object.size,  object.size,
+                         object.size, -object.size,  object.size,
+                         object.size, -object.size, -object.size,
+                        
+                        //Bottom right
+                        -object.size, -object.size,  object.size,
+                         object.size, -object.size, -object.size,
+                        -object.size, -object.size, -object.size
+                        ];
+                    this.pocketGL.gl.bufferData(this.pocketGL.gl.ARRAY_BUFFER, new Float32Array(vertices), this.pocketGL.gl.STATIC_DRAW);
+
+                    object.vertexPositionBuffer.itemSize = 3;
+                    object.vertexPositionBuffer.numItems = 18;
+
+                    /* Color                                         */
+                    console.log("        Buffer the " + object.type + "'s color");
+                    object.vertexColorBuffer = this.pocketGL.gl.createBuffer();
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexColorBuffer);
+
+                    this.pocketGL.gl.bufferData(this.pocketGL.gl.ARRAY_BUFFER, new Float32Array(object.color), this.pocketGL.gl.STATIC_DRAW);
+
+                    object.vertexColorBuffer.itemSize = 4;
+                    object.vertexColorBuffer.numItems = 18;
+                    };
+
+                /* Draw Pyramid                                       */
+                pocket.drawPyramid = function(object) {
+                    mat4.identity(object.mvMatrix);
+
+                    this.mvPushMatrix(object.mvMatrix,this.mvMatrixStack);
+                    // Give it a X, Y position. The Z position if for visibility a.k.a. depth
+                    mat4.translate(this.pMatrix, this.pMatrix, [0.0, 3.0, -1.0]);
+                    mat4.rotate(object.mvMatrix, object.mvMatrix, degToRad(object.rotValue), object.rotDirection);
+
+                    this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexPositionBuffer);
+                    this.pocketGL.gl.vertexAttribPointer(object.shaderProgram.vertexPositionAttribute, object.vertexPositionBuffer.itemSize, this.pocketGL.gl.FLOAT, false, 0, 0);
+
+                    if (object.vertexColorBuffer) {
+                        this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexColorBuffer);
+                        this.pocketGL.gl.vertexAttribPointer(object.shaderProgram.vertexColorAttribute, object.vertexColorBuffer.itemSize, this.pocketGL.gl.FLOAT, false, 0, 0);
+                        }
+
+                    this.setMatrixUniforms(object,this.pMatrix,object.mvMatrix);
+                    this.pocketGL.gl.drawArrays(this.pocketGL.gl.TRIANGLES, 0, object.vertexPositionBuffer.numItems);
+
+                    this.mvPopMatrix(object.mvMatrix,this.mvMatrixStack);
+                    };
+
+                /* Repeated draw functionality                       */
+                function reDraw() {
+                    looper = 0;
+                    reDrawID = requestAnimFrame(reDraw);
+                    pocket.renderPerspective();
+                    while (looper <= pocket.contentList.length-1) {
+                        if ("triangle" == pocket.contentList[looper].type) {
+                            pocket.pocketGL.gl.useProgram(pocket.contentList[looper].shaderProgram);
+                            pocket.drawTriangle(pocket.contentList[looper]);
+                            pocket.animate(pocket.contentList[looper]);
+                            }
+                        if ("square" == pocket.contentList[looper].type) {
+                            pocket.pocketGL.gl.useProgram(pocket.contentList[looper].shaderProgram);
+                            pocket.drawSquare(pocket.contentList[looper]);
+                            pocket.animate(pocket.contentList[looper]);
+                            }
+                        if ("cube" == pocket.contentList[looper].type || "cubeTex" == pocket.contentList[looper].type) {
+                            pocket.pocketGL.gl.useProgram(pocket.contentList[looper].shaderProgram);
+                            pocket.drawCube(pocket.contentList[looper]);
+                            pocket.animate(pocket.contentList[looper]);
+                            }
+                        if ("pyramid" == pocket.contentList[looper].type) {
+                            pocket.pocketGL.gl.useProgram(pocket.contentList[looper].shaderProgram);
+                            pocket.drawPyramid(pocket.contentList[looper]);
+                            pocket.animate(pocket.contentList[looper]);
+                            }
+                        looper = looper + 1;
+                        }
+                    /* Update the frame rate                         */
+                    updateFPS(1);
+                    }
+
+                /* Fill pocket based on content                      */
+                pocket.fillPocket = function(filler,size) {
+                    /*
+                    Common conventions to be followed across
+                    Contents can contain any type of objects. Each object can be a triangle, cube etc.
+                    object.type                 =    Contains the type of object namely triangle, cube
+                    object.size                 =    Contains the size of the object. 1 unit will be the same as how WEBGL assumes 1 as in an array
+                    object.sides                =    Contains the number of sides. This needs to be first declared.    (To be built and used)
+                    object.shaderProgram        =    Contains the fragment and vertex shader
+                    object.rotationSpeed        =    Rotatory speed
+                    object.rotValue             =    Dynamic rotation based on rotation
+                    object.rotDirection         =    [x,y,z]
+                    object.color                =    Will contain colors based on the sides clockwise. One vertice -> [R,G,B,alpha]
+                    object.texture              =    If texture is present then this will be used.                     (To be built and used)
+
+                    object.vertexPositionBuffer =    allocated during buffering
+                    object.vertexColorBuffer    =    allocated during buffering
+                    object.vertexTexCoordBuffer =    allocated during buffering
+                    object.vertexIndexBuffer    =    allocated during buffering
+                    */
+                    console.log(" ");
+                    console.log("    Fill Pocket with:" + filler + " of size:" + size);
+                    if ("triangle" == filler) {
+                        var triangleObject           = new Object();
+                        triangleObject.type          = filler;
+                        triangleObject.size          = size;
+                        triangleObject.sides         = 3;
+                        triangleObject.shaderProgram = this.initShaders(this.pocketGL.gl, filler+"-shader-fs", filler+"-shader-vs");
+                        triangleObject.rotationSpeed = 90;
+                        triangleObject.rotValue      = 0;
+                        triangleObject.rotDirection  = [0,1,0];
+                        triangleObject.color         = [
+                                                        1.0, 0.0, 0.0, 1.0, // Top
+                                                        0.0, 1.0, 0.0, 1.0, // Right
+                                                        0.0, 0.0, 1.0, 1.0  // Bottom
+                                                        ];
+                        triangleObject.mvMatrix      = mat4.create();
+
+                        if (triangleObject.shaderProgram) {
+                            console.log("      Buffer the " + filler +  ":Store at:" + this.contentList.length);
+                            this.bufferTriangle(triangleObject);
+                            this.contentList[this.contentList.length] = triangleObject;
+                            }
+                        else {
+                            console.log("      Triangle shader failure");
+                            }
+                        }
+
+                    if ("square" == filler) {
+                        var squareObject           = new Object();
+                        squareObject.type          = filler;
+                        squareObject.size          = size;
+                        squareObject.sides         = 4;
+                        squareObject.shaderProgram = this.initShaders(this.pocketGL.gl, filler+"-shader-fs", filler+"-shader-vs");
+                        squareObject.rotationSpeed = 75;
+                        squareObject.rotValue      = 0;
+                        squareObject.rotDirection  = [1,0,0];
+                        squareObject.color         = [
+                                                      1.0, 0.0, 0.0, 1.0, //Top right
+                                                      0.0, 1.0, 0.0, 1.0, //Top left
+                                                      0.0, 0.0, 1.0, 1.0, //Bottom right
+                                                      0.5, 1.0, 0.5, 1.0  //Bottom left
+                                                      ];
+                        squareObject.mvMatrix      = mat4.create();
+
+                        if (squareObject.shaderProgram) {
+                            console.log("      Buffer the " + filler + ":Store at:" + this.contentList.length);
+                            this.bufferSquare(squareObject);
+                            this.contentList[this.contentList.length] = squareObject;
+                            }
+                        else {
+                            console.log("      Square shader failure");
+                            }
+                        }
+
+                    if ("cube" == filler) {
+                        var cubeObject           = new Object();
+                        cubeObject.type          = filler;
+                        cubeObject.size          = size;
+                        cubeObject.sides         = 12;
+                        cubeObject.shaderProgram = this.initShaders(this.pocketGL.gl, filler+"-shader-fs", filler+"-shader-vs");
+                        cubeObject.rotationSpeed = 75;
+                        cubeObject.rotValue      = 0;
+                        cubeObject.rotDirection  = [1,1,1];
+                        cubeObject.color         = [
+                                                    [1.0, 0.0, 0.0, 1.0], // Front face
+                                                    [1.0, 1.0, 0.0, 1.0], // Back face
+                                                    [0.0, 1.0, 0.0, 1.0], // Top face
+                                                    [1.0, 0.5, 0.5, 1.0], // Bottom face
+                                                    [1.0, 0.0, 1.0, 1.0], // Right face
+                                                    [0.0, 0.0, 1.0, 1.0]  // Left face
+                                                    ];
+                        cubeObject.mvMatrix      = mat4.create();
+
+                        if (cubeObject.shaderProgram) {
+                            console.log("      Buffer the " + filler + ":Store at:" + this.contentList.length);
+                            this.bufferCube(cubeObject);
+                            this.contentList[this.contentList.length] = cubeObject;
+                            }
+                        else {
+                            console.log("      Cube shader failure");
+                            }
+                        }
+
+                    if ("cubeTex" == filler) {
+                        var cubeObject           = new Object();
+                        cubeObject.type          = filler;
+                        cubeObject.size          = size;
+                        cubeObject.sides         = 12;
+                        cubeObject.shaderProgram = this.initShaders(this.pocketGL.gl, filler+"-shader-fs", filler+"-shader-vs");
+                        cubeObject.rotationSpeed = 75;
+                        cubeObject.rotValue      = 0;
+                        cubeObject.rotDirection  = [1,1,1];
+                        cubeObject.texture       = this.initTexture(this.pocketGL.gl, "new.jpg");
+                        cubeObject.mvMatrix      = mat4.create();
+
+                        if (cubeObject.shaderProgram) {
+                            console.log("      Buffer the " + filler + ":Store at:" + this.contentList.length);
+                            this.bufferCube(cubeObject);
+                            this.contentList[this.contentList.length] = cubeObject;
+                            }
+                        else {
+                            console.log("      Cube shader failure");
+                            }
+                        }
+
+                    if ("pyramid" == filler) {
+                        var pyramidObject           = new Object();
+                        pyramidObject.type          = filler;
+                        pyramidObject.size          = size;
+                        pyramidObject.sides         = 8;
+                        pyramidObject.shaderProgram = this.initShaders(this.pocketGL.gl, filler+"-shader-fs", filler+"-shader-vs");
+                        pyramidObject.rotationSpeed = 90;
+                        pyramidObject.rotValue      = 0;
+                        pyramidObject.rotDirection  = [0,1,0];
+                        pyramidObject.color         = [
+                                                        // Front face
+                                                        1.0, 0.0, 0.0, 1.0,
+                                                        0.0, 1.0, 0.0, 1.0,
+                                                        0.0, 0.0, 1.0, 1.0,
+
+                                                        // Right face
+                                                        1.0, 0.0, 0.0, 1.0,
+                                                        0.0, 0.0, 1.0, 1.0,
+                                                        0.0, 1.0, 0.0, 1.0,
+
+                                                        // Back face
+                                                        1.0, 0.0, 0.0, 1.0,
+                                                        0.0, 1.0, 0.0, 1.0,
+                                                        0.0, 0.0, 1.0, 1.0,
+
+                                                        // Left face
+                                                        1.0, 0.0, 0.0, 1.0,
+                                                        0.0, 0.0, 1.0, 1.0,
+                                                        0.0, 1.0, 0.0, 1.0,
+
+                                                        // Bottom left
+                                                        0.0, 1.0, 0.0, 1.0,
+                                                        0.0, 0.0, 1.0, 1.0,
+                                                        0.0, 1.0, 0.0, 1.0,
+                                                        
+                                                        // Bottom right
+                                                        0.0, 1.0, 0.0, 1.0,
+                                                        0.0, 1.0, 0.0, 1.0,
+                                                        0.0, 0.0, 1.0, 1.0
+                                                        ];
+                        pyramidObject.mvMatrix      = mat4.create();
+
+                        if (pyramidObject.shaderProgram) {
+                            console.log("      Buffer the " + filler + ":Store at:" + this.contentList.length);
+                            this.bufferPyramid(pyramidObject);
+                            this.contentList[this.contentList.length] = pyramidObject;
+                            }
+                        else {
+                            console.log("      Pyramid shader failure");
+                            }
+                        }
+                    };
+                    
+                pocket.callReDraw = function() {
+                    console.log("    Calling Redraw");
+                    requestAnimFrame(reDraw);
+                    };
+
+                /* Destructor                                        */
+                pocket.destroy = function() {
+                    console.log("    Destroy at iteration:" + reDrawID);
+                    /* Stop the render                               */
+                    cancelRequestAnimFrame(reDrawID);
+                    delete this.pMatrix;
+                    delete this.mvMatrixStack;
+                    looper = 0;
+                    while (looper <= this.contentList.length-1) {
+                        console.log("    Destroying: " + this.contentList[looper].type);
+                        delete this.contentList[looper].type;
+                        delete this.contentList[looper].size;
+                        delete this.contentList[looper].sides;
+
+                        /* Dispose the shaders                       */
+                        if (this.contentList[looper].shaderProgram.fragmentShader) {
+                            console.log("      Dispose Fragment Shader");
+                            this.pocketGL.gl.deleteShader(this.contentList[looper].shaderProgram.fragmentShader);
+                            delete this.contentList[looper].shaderProgram.fragmentShader;
+                            }
+
+                        if (this.contentList[looper].shaderProgram.vertexShader) {
+                            console.log("      Dispose Vertex Shader");
+                            this.pocketGL.gl.deleteShader(this.contentList[looper].shaderProgram.vertexShader);
+                            delete this.contentList[looper].shaderProgram.vertexShader;
+                            }
+
+                        /* Dispose the texture                       */
+                        if (this.contentList[looper].texture) {
+                            console.log("      Dispose Texture");
+                            this.pocketGL.gl.deleteTexture(this.contentList[looper].texture);
+                            delete this.contentList[looper].texture;
+                            }
+
+                        /* Dispose the program                       */
+                        if (this.contentList[looper].shaderProgram) {
+                            console.log("      Dispose Shader program");
+                            this.pocketGL.gl.deleteProgram(this.contentList[looper].shaderProgram);
+                            delete this.contentList[looper].shaderProgram;
+                            }
+
+                        /* Empty the buffers                         */
+                        console.log("      Dispose buffers");
+                        if (this.contentList[looper].vertexPositionBuffer) {
+                            console.log("        Dispose Vertex Position Buffer");
+                            this.pocketGL.gl.deleteBuffer(this.contentList[looper].vertexPositionBuffer);
+                            delete this.contentList[looper].vertexPositionBuffer;
+                            }
+                        if (this.contentList[looper].vertexTexCoordBuffer) {
+                            console.log("        Dispose Vertex Coordinate Buffer");
+                            this.pocketGL.gl.deleteBuffer(this.contentList[looper].vertexTexCoordBuffer);
+                            delete this.contentList[looper].vertexTexCoordBuffer;
+                            }
+                        if (this.contentList[looper].vertexColorBuffer) {
+                            console.log("        Dispose Vertex Color Buffer");
+                            this.pocketGL.gl.deleteBuffer(this.contentList[looper].vertexColorBuffer);
+                            delete this.contentList[looper].vertexColorBuffer;
+                            }
+                        if (this.contentList[looper].vertexIndexBuffer) {
+                            console.log("        Dispose Vertex Index Buffer");
+                            this.pocketGL.gl.deleteBuffer(this.contentList[looper].vertexIndexBuffer);
+                            delete this.contentList[looper].vertexIndexBuffer;
+                            }
+
+                        delete this.contentList[looper].rotationSpeed;
+                        delete this.contentList[looper].rotValue;
+                        delete this.contentList[looper].rotDirection;
+                        delete this.contentList[looper].color;
+                        delete this.contentList[looper].mvMatrix;
+
+                        looper = looper + 1;
+                        }
+                    this.contentList.length = 0;
+                    this.pocketGL.destroy();
+                    delete this;
+                    };
+
+                return pocket;
+                }
+
+            /* WebGL end                                         */
+            /*****************************************************/
+
+            /* Draw the canvas                                   */
+            function drawCanvas () {
+                console.log("  Draw the canvas");
+                printf('<canvas id="canvas" style="border: none;" width="'+wd+'" height="'+ht+'"></canvas>');
+                }
+
+            function drawFPS() {
+                printf('<button id="stopRender" type="button" >stopRender</button>');
+                console.log("  Draw the FPS section");
+                printf('<font color = "white"><b id="fps"></b></font>');
+                }
+
+            function webGLStart() {
+                console.log("  Start the WEBGL");
+                var canvas  = document.getElementById("canvas");
+
+                /* Create a Pocket based on WebGL      */
+                var pocket  = definePocket(canvas);
+
+                if (0 == pocket) {
+                    /* Canvas has not been initialized */
+                    }
+                else {
+                    document.getElementById('stopRender').onclick=function() {pocket.destroy()};
+                    pocket.callReDraw();
+                    pocket.fillPocket("triangle",1);
+                    pocket.fillPocket("square",1);
+                    pocket.fillPocket("cubeTex",1);
+                    pocket.fillPocket("pyramid",1);
+                    }
+                }
+
+            function godsMain() {
+                console.log("Main");
+                /* Initiate mouse object                         */
+                document.onmousemove = mouseMove;
+
+                /* Draw the canvas                               */
+                drawCanvas();
+                /* Draw the fps                                  */
+                drawFPS();
+                /* Begin WEBGL Render                            */
+                webGLStart();
+
+                /* Help the browser Garbage collect              */
+                window.onbeforeunload = onExit;
+                }
+        </script>
+    </head>
+
+    <body bgcolor = "black">
+        <script>
+            /* Calculate Width and Height before rendering       */
+            wd = document.body.clientWidth  - 10;
+            if (document.body.clientHeight > document.documentElement.clientHeight) {
+                ht = document.body.clientHeight - 40;
+                }
+            else {
+                ht = document.documentElement.clientHeight - 40;
+                }
+            console.log("Script Start");
+            console.log("  Screen Width:"  + wd);
+            console.log("  Screen Height:" + ht);
+            godsMain();
+        </script>
+    </body>
+
+</html>
