@@ -1440,7 +1440,7 @@
                 printf('<div style="height:40;width:'+screenWidth+';">');
                 printf('<button id="stopRender" type="button" >Stop Render</button>');
                 printf('<font color = "white">');
-                printf('Stop At Iteration:<input id="stopIteration" type="text" value="40" size="4" disabled/>');
+                printf('Stop At Iteration:<input id="stopIteration" type="text" value="0" size="4" disabled/>');
                 printf('<b id="fps"></b>');
                 printf('</font>');
                 printf('</div>');
