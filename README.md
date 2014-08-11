@@ -10,8 +10,8 @@ Notepadplusplus_webGLLang.xml - Contains user defined language for notepad++ for
 
 Usage:
 
-a. Within Notepad++ menu select "Language" --> "Define your language"
-b. Click the "Import" button and select the xml file.
+  a. Within Notepad++ menu select "Language" --> "Define your language"
+  b. Click the "Import" button and select the xml file.
 
 Tutorial1 - Contains creation of traingle, cube (color and texture), square and pyramid structure.
 
