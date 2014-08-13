@@ -723,7 +723,7 @@
                         }
 
                     /* Color                                     */
-                    if (object.color && object.shaderProgram.vertexColorAttribute) {
+                    if (object.color && (null !== object.shaderProgram.vertexColorAttribute)) {
                         printLog("        Buffer the " + object.type + "'s color");
                         object.vertexColorBuffer = this.pocketGL.gl.createBuffer();
                         this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexColorBuffer);
@@ -744,7 +744,7 @@
                         }
 
                     /* Texture                                   */
-                    if (object.texture && object.shaderProgram.textureCoordAttribute) {
+                    if (object.texture && (null !== object.shaderProgram.textureCoordAttribute)) {
                         printLog("        Buffer the " + object.type + "'s texture. GL Texture Location:" + pocket.texCount);
                         object.vertexTexCoordBuffer = this.pocketGL.gl.createBuffer();
                         this.pocketGL.gl.bindBuffer(this.pocketGL.gl.ARRAY_BUFFER, object.vertexTexCoordBuffer);
