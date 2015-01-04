@@ -15,4 +15,4 @@ a. Notepadplusplus_webGLLang.xml - Contains user defined language for webGL with
 
 b. Tutorial1 - Contains creation of traingle, cube (color and texture), square and pyramid structure.
 
-c. Tutorial2 - Contains lighting of cude and restructured code for extensibility. Updated to facilitate multiple pocket contents of the same type.
+c. Tutorial2 - Contains lighting of cube and restructured code for extensibility. Updated to facilitate multiple pocket contents of the same type.
