@@ -392,7 +392,7 @@
 
                     mat4.rotate(mvMatrix, mvMatrix, degToRad(-camera.pitch), [1, 0, 0]);
                     //mat4.rotate(mvMatrix, mvMatrix, degToRad(-camera.yaw), [0, 1, 0]);
-					mat4.translate(mvMatrix, mvMatrix, [camera.yaw, 0, 0]);
+                    mat4.translate(mvMatrix, mvMatrix, [camera.yaw, 0, 0]);
                     mat4.translate(mvMatrix, mvMatrix, [-camera.xPos, -camera.yPos, -camera.zPos]);
                     };
 
