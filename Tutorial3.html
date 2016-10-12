@@ -20,16 +20,14 @@
         <title>WEB GL Tutorial 3 Basics</title>
         <meta http-equiv="content-type" content="text/html; charset=utf-8">
 
-        <!-- GL Matrix version 2-->
-        <script type="text/javascript" src="gl-matrix/common.js"></script>
-        <script type="text/javascript" src="gl-matrix/mat4.js"></script>
-        <script type="text/javascript" src="gl-matrix/mat3.js"></script>
-        <script type="text/javascript" src="gl-matrix/vec2.js"></script>
-        <script type="text/javascript" src="gl-matrix/vec3.js"></script>
+        <!-- GL Matrix version https://github.com/toji/gl-matrix/ -->
+        <script type="text/javascript" src="commonjs/gl-matrix-min.js"></script>
 
-        <!-- Google GL utility -->
-        <script type="text/javascript" src="commonjs/webgl-utils.js"></script>
-        
+        <!-- JS color version https://github.com/EastDesire/jscolor -->
+        <script type="text/javascript" src="commonjs/jscolor.min.js"></script>
+
+        <!-- Common JS contents https://github.com/keestu/CommonScripts -->
+
         <!-- Frames per second -->
         <script type="text/javascript" src="commonjs/fps.js"></script>
         
@@ -38,9 +36,6 @@
 
         <!-- Key Press         -->
         <script type="text/javascript" src="commonjs/keyBoardEvents.js"></script>
-
-        <!-- JS color          -->
-        <script type="text/javascript" src="jscolor/jscolor.js"></script>
 
         <!--   Shaders              -->
         <!--   Triangle Shader      -->
@@ -305,7 +300,7 @@
 
                 /* Initialize WebGL                              */
                 try {
-                    var gl                = WebGLUtils.setupWebGL(canvas);
+                    var gl                = canvas.getContext("webgl");
                     gl.viewportWidth      = canvas.width;
                     gl.viewportHeight     = canvas.height;
                     basePocket.gl         = gl;
@@ -1107,22 +1102,22 @@
 
                         if (lighting) {
                             /* Set the ambient light             */
-                            if (document.getElementById('ambLight') && document.getElementById('ambLight').color) {
+                            if (document.getElementById('ambLight') && document.getElementById('ambLight').jscolor) {
                                 this.setAmbientLight(object,
-                                  document.getElementById('ambLight').color.rgb[0],
-                                  document.getElementById('ambLight').color.rgb[1],
-                                  document.getElementById('ambLight').color.rgb[2]);
+                                  document.getElementById('ambLight').jscolor.rgb[0],
+                                  document.getElementById('ambLight').jscolor.rgb[1],
+                                  document.getElementById('ambLight').jscolor.rgb[2]);
                                 }
                             else {
                                 this.setAmbientLight(object,0.2,0,0);
                                 }
 
                             /* Set the directional light         */
-                            if (document.getElementById('dirLight') && document.getElementById('dirLight').color) {
+                            if (document.getElementById('dirLight') && document.getElementById('dirLight').jscolor) {
                                 this.setDirectionalLight(object,
-                                  document.getElementById('dirLight').color.rgb[0],
-                                  document.getElementById('dirLight').color.rgb[1],
-                                  document.getElementById('dirLight').color.rgb[2]);
+                                  document.getElementById('dirLight').jscolor.rgb[0],
+                                  document.getElementById('dirLight').jscolor.rgb[1],
+                                  document.getElementById('dirLight').jscolor.rgb[2]);
                                 }
                             else {
                                 this.setDirectionalLight(object,0.2,0,0);
@@ -1191,13 +1186,13 @@
                 function reDraw() {
                     drawLooper = 0;
                     /* Initiate redraw                           */
-                    reDrawID = requestAnimFrame(reDraw);
+                    reDrawID = requestAnimationFrame(reDraw);
 
                     /* Set global background                     */
-                    if (document.getElementById('perspBack') && document.getElementById('perspBack').color) {
-                        pocket.setGlobalBack(document.getElementById('perspBack').color.rgb[0],
-                          document.getElementById('perspBack').color.rgb[1],
-                          document.getElementById('perspBack').color.rgb[2]);
+                    if (document.getElementById('perspBack') && document.getElementById('perspBack').jscolor) {
+                        pocket.setGlobalBack(document.getElementById('perspBack').jscolor.rgb[0],
+                          document.getElementById('perspBack').jscolor.rgb[1],
+                          document.getElementById('perspBack').jscolor.rgb[2]);
                         }
                     else {
                         pocket.setGlobalBack(0,0,0);
@@ -1367,7 +1362,7 @@
                         cubeObject.rotationSpeed = 20;
                         cubeObject.rotValue      = 0;
                         cubeObject.rotDirection  = [1,1,1];
-                        cubeObject.texture       = this.initTexture(this.pocketGL.gl, "images/new.jpg");
+                        cubeObject.texture       = this.initTexture(this.pocketGL.gl, "commonjs/new.jpg");
                         cubeObject.mvMatrix      = mat4.create();
 
                         if (cubeObject.shaderProgram) {
@@ -1436,7 +1431,7 @@
 
                 pocket.callReDraw = function() {
                     printLog("    Calling Redraw");
-                    requestAnimFrame(reDraw);
+                    requestAnimationFrame(reDraw);
                     };
 
                 /* Destructor                                    */
@@ -1591,9 +1586,9 @@
 
                 /* Functionality                                 */
                 printf('<tr>');
-                printf('<td><input id = "perspBack" class="color" value="00FF00"></td>');
-                printf('<td><input id = "dirLight" class="color" value="FFFFFF"></td>');
-                printf('<td><input id = "ambLight" class="color" value="0000FF"></td>');
+                printf('<td><input id = "perspBack" class="jscolor" value="00FF00"></td>');
+                printf('<td><input id = "dirLight" class="jscolor" value="FFFFFF"></td>');
+                printf('<td><input id = "ambLight" class="jscolor" value="0000FF"></td>');
                 printf('<td>X: <input id="dirX" type="text" value="-1.0" size="4" />Y: <input id="dirY" type="text" value="-1.0" size="4" />Z: <input id="dirZ" type="text" value="-1.0" size="4" /></td>');
                 printf('<td>');
                 printf('<select id = "depthBlend"><option value="none">None</option><option value="depth">Depth</option><option value="blend">Blend</option></select>');
