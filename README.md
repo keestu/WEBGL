@@ -18,3 +18,5 @@ b. Tutorial1 - Contains creation of traingle, cube (color and texture), square a
 c. Tutorial2 - Contains lighting of cube and restructured code for extensibility. Updated to facilitate multiple pocket contents of the same type.
 
 d. Tutorial3 - Contains depth, blend options. Usage of keyboard events js present in commonjs. Single drawObject call with performance improvements and browser compatabilities. Addition of movable Camera based on keyboard events.
+
+e. Tutorial Final - Leveraged AI in VS Code to cleanup and refactor code where required and thereby making it a cleaner Tutorial 3.
